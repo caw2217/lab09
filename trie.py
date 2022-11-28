@@ -6,6 +6,7 @@ author: Cameron Wilson
 """
 from dataclasses import dataclass
 from typing import Union
+import demo_small_trie
 
 
 @dataclass
@@ -15,37 +16,17 @@ class Trie:
     right: Union["Trie", None]
 
 
-def create_internal_node(trie: Trie, is_left: bool):
-    if is_left:
-        trie.left = Trie("", None, None)
-        return trie.left
+def split(y: str, x: str, index):
+    if y[index] != x[index]:
+        if x[index] == "0":
+            return Trie("", Trie(x, None, None), Trie(y, None, None))
+        else:
+            return Trie("", Trie(y, None, None), Trie(x, None, None))
     else:
-        trie.right = Trie("", None, None)
-        return trie.right
-
-
-def split(y: Trie, string: str, index: int):
-    temp = y.value
-    if temp == string:
-        return y
-    else:
-        y = Trie("", None, None)
-        current = y
-        index = 0
-        for i in range(index, len(string)):
-            if string[i] == temp[i]:
-                if string[i] == "0":
-                    current = create_internal_node(y, True)
-                else:
-                    current = create_internal_node(y, False)
-            else:
-                if string[i] == "0":
-                    current.left = Trie(string, None, None)
-                    current.right = Trie(temp, None, None)
-                else:
-                    current.left = Trie(temp, None, None)
-                    current.right = Trie(string, None, None)
-        return y
+        if x[index] == "0":
+            return Trie("", split(y, x, index + 1), None)
+        else:
+            return Trie("", None, split(y, x, index + 1))
 
 
 def is_leaf_or_empty(trie):
@@ -55,29 +36,59 @@ def is_leaf_or_empty(trie):
         return False
 
 
-def insert(trie: Union[Trie, None], string: str):
+def insert(trie: Union[Trie, None], string: str, index = 0):
     if trie is None:
         trie = Trie(string, None, None)
         return trie
     else:
-        current = trie
-        index = 0
-        while not is_leaf_or_empty(current):
+        if not is_leaf_or_empty(trie):
             if string[index] == "0":
-                current = current.left
+                trie.left = insert(trie.left, string, index + 1)
             else:
-                current = current.right
-        if current is None:
-            current = string
+                trie.right = insert(trie.right, string, index + 1)
+            return trie
         else:
-            split(current, string)
-        return trie
+            return split(trie.value, string, index)
+
+
+def trie_to_list(trie, acc):
+    if trie is not None:
+        result = []
+        if trie.value != "":
+            acc = [trie.value]
+
+
+        result.append(trie_to_list(trie.right))
+    return acc
+
+def print_tree(node, prefix="", level=0):
+    if node is not None:
+        if node.value == "":
+            print(("\t" * level) + prefix + "Internal")
+        else:
+            print(("\t" * level) + prefix + node.value)
+        print_tree(node.left, "l: ", level+1)
+        print_tree(node.right, "r: ", level+1)
+    else:
+        print(("\t" * level) + prefix + "None")
 
 
 def main():
     test = None
     test = insert(test, "001010")
-    print(test)
+    print_tree(test)
+    test = insert(test, "000111")
+    print_tree(test)
+    test = insert(test, "111000")
+    print('')
+    print_tree(test)
+    test = insert(test, "010000")
+    print('')
+    print_tree(test)
+    test = insert(test, "110001")
+    print('')
+    print_tree(test)
+    print(trie_to_list(test))
 
 
 if __name__ == '__main__':
