@@ -51,15 +51,39 @@ def insert(trie: Union[Trie, None], string: str, index = 0):
             return split(trie.value, string, index)
 
 
-def trie_to_list(trie, acc):
+def trie_to_string(trie):
     if trie is not None:
-        result = []
         if trie.value != "":
-            acc = [trie.value]
+            return trie.value
+        else:
+            result = ""
+            result += trie_to_string(trie.left)
+            result += " "
+            result += trie_to_string(trie.right)
+            return result
+    else:
+        return " "
 
 
-        result.append(trie_to_list(trie.right))
-    return acc
+def trie_to_list(trie):
+    return trie_to_string(trie).split()
+
+
+def height(trie):
+    if trie is None:
+        return -1
+    else:
+        return 1 + max(height(trie.left), height(trie.right))
+
+
+def size(trie):
+    if trie is None:
+        return 0
+    else:
+        if trie.value == "":
+            return size(trie.left) + size(trie.right)
+        else:
+            return 1 + size(trie.left) + size(trie.right)
 
 def print_tree(node, prefix="", level=0):
     if node is not None:
@@ -89,6 +113,7 @@ def main():
     print('')
     print_tree(test)
     print(trie_to_list(test))
+    print(test)
 
 
 if __name__ == '__main__':
